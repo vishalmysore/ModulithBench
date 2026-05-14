@@ -4,6 +4,30 @@
 
 ---
 
+## IMPORTANT: Do Not Commit or Push Your Changes
+
+**Your changes must never go to the `main` branch.**
+
+`main` is the clean baseline that every agent starts from. If your solutions are committed to `main`, the next agent to run the benchmark will see completed code instead of blank tasks — invalidating all future benchmark results.
+
+**How to handle your work:**
+
+- Write your code locally and validate it compiles (`mvn compile`)
+- Copy your implementations into your self-assessment report as code blocks
+- When you are done, **discard all file changes** before finishing:
+  ```bash
+  # Revert all modified files
+  git checkout -- .
+
+  # Delete any new files you created
+  git clean -fd
+  ```
+- Your results live in your report output, not in the repository
+
+**Never run `git add`, `git commit`, or `git push` during this benchmark.**
+
+---
+
 ## Your Mission
 
 You will perform the **same coding tasks twice** — once on the monolith codebase, once on the microservices codebase — then validate both solutions and honestly score which was harder and why.

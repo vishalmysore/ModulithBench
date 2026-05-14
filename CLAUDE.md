@@ -1,5 +1,16 @@
 # ModulithBenchMark — Claude Code Guide
 
+## IMPORTANT: Do Not Commit Your Changes
+
+**Never run `git add`, `git commit`, or `git push` in this repository.**
+
+`main` is the clean benchmark baseline. Your solutions go in your report, not in the repo.
+When you finish, discard everything: `git checkout -- . && git clean -fd`
+
+See `AGENT_BENCHMARK_PROTOCOL.md` for the full rules.
+
+---
+
 ## What This Project Is
 
 A benchmark comparing AI agent performance on **monolithic** vs **microservices** architecture across 3 domains: Library, Healthcare, Insurance.

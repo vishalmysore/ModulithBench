@@ -1,114 +1,115 @@
-# ModulithBenchMark
+# ModulithBench
 
-A benchmark that measures whether AI agents perform better when working with monolithic vs microservices architecture.
-
-**Hypothesis**: Monoliths give AI agents 18–30% better performance on code generation, bug fixing, and comprehension — because all related logic lives in one place.
+A benchmark that measures how software architecture affects AI coding agent performance across four enterprise domains.
 
 ---
 
-## Repository Structure
+## The Core Argument
 
-```
-ModulithBenchMark/
-├── library/
-│   ├── monolith/          Spring Boot 3.2, port 8080
-│   └── microservices/     5 separate services
-├── healthcare/
-│   ├── monolith/          Spring Boot 3.2, port 8081
-│   └── microservices/     7 separate services
-└── insurance/
-    ├── monolith/          Spring Boot 3.2, port 8082
-    └── microservices/     7 separate services
-```
+No architecture is universally good. Each makes a different tradeoff:
 
-Each domain is fully implemented in both architectures with the same business logic, allowing direct comparison.
+| | Traditional Monolith | Microservices | Modular Monolith |
+|---|---|---|---|
+| **Scalability** | Poor — scale everything or nothing | Excellent — scale each service independently | Good — scale the whole app; extract hot modules only when needed |
+| **High Availability** | Single point of failure | Excellent — independent failure domains | Good — HA at the app level; module isolation prevents cascading failures |
+| **DevOps Complexity** | Simple — one deployment | High — service mesh, distributed tracing, N CI/CD pipelines | Low — one deployment, one config, one pipeline |
+| **AI Agent Productivity** | Good — high locality, but no module boundaries so agents get lost in the "big ball of mud" | Poor — context fragmentation, repo-hopping, HTTP boundaries, eventual consistency | **Best** — high locality AND clear module boundaries give agents a perfect signal-to-noise ratio |
+| **Developer Experience** | Easy to start, hard to maintain at scale | Autonomous teams, but network plumbing is exhausting | Best of both: logical order with physical simplicity |
+| **Transaction Model** | ACID | Eventual consistency / Sagas | ACID |
+| **Refactoring** | Hard — tight coupling everywhere | Complex — breaking API contracts | Easy — module boundaries guide every change |
+
+**The sweet spot is the Modular Monolith.**
+
+It preserves the locality that AI agents need, avoids the operational complexity that destroys DevOps velocity, and still enforces clean module boundaries that keep the codebase navigable. You can extract a module into a microservice later — but only when you actually need to, not speculatively upfront.
+
+---
+
+## Why AI Agents Struggle With Microservices
+
+AI coding agents have finite context windows and no persistent memory of a codebase. When business logic is spread across services:
+
+- Understanding one feature requires reading 4+ repositories
+- Tracing a bug means following HTTP calls across service boundaries
+- Implementing a cross-service feature requires reasoning about API contracts, error propagation, and eventual consistency simultaneously
+- Atomic multi-service operations require saga patterns — the agent must reason about compensating transactions and partial failure states
+
+This is **context fragmentation**. It is the architectural equivalent of CPU cache misses — the agent spends most of its reasoning budget navigating the architecture rather than solving the actual problem.
+
+**Modular monoliths eliminate context fragmentation** while preserving the logical structure that helps agents find and understand code quickly.
+
+---
+
+## What This Benchmark Measures
+
+Four domains, each implemented in both architectures:
+
+| Domain | Modules | Port | Key Cross-Module Scenario |
+|--------|---------|------|--------------------------|
+| Library | 5 | 8080 | Loan creation validates member + decrements book inventory atomically |
+| Healthcare | 7 | 8081 | Appointment scheduling validates patient + doctor availability in one transaction |
+| Insurance | 7 | 8082 | Claim filing verifies policy ownership by customer without HTTP |
+| Supply Chain | 8 | 8083 | Ghost Shipment: order cancellation releases inventory + warehouse task + carrier booking atomically |
+
+Three benchmark metrics — Code Generation (40%), Bug Fixing (35%), Comprehension (25%) — scored across 11 tasks that each require cross-module reasoning.
+
+---
+
+## The Two Scenarios That Make the Case
+
+### Ghost Shipment (Supply Chain)
+
+A customer cancels an order while the warehouse is picking it and the carrier already has a booking.
+
+**Monolith**: `OrderService.cancelOrder()` releases inventory, cancels the warehouse task, and cancels the carrier booking in **one `@Transactional`**. If any step throws, everything rolls back atomically. Partial state is structurally impossible.
+
+**Microservices**: Three HTTP calls to three independent services. If `carrier-service` returns 503 after the first two succeed, you now have: cancelled order, released inventory, but an **active carrier booking**. The ghost shipment exists. The agent must now implement a distributed saga with compensating transactions, idempotency keys, and a dead letter queue — none of which is the actual business problem.
+
+### N+1 Profitability Report (Supply Chain)
+
+Generate a shipment profitability report combining revenue (Order), shipping cost (Carrier), duties (Customs), and fuel estimate (Route).
+
+**Monolith**: `BillingService.generateProfitabilityReport()` — four direct method calls in one `@Transactional(readOnly = true)`, roughly 20 lines of pure business logic.
+
+**Microservices**: Four HTTP calls, four JSON schemas to deserialize, four independent error states to handle. The agent writes roughly 80 lines — most of it infrastructure boilerplate with no business value. The reasoning cost is 4x higher.
 
 ---
 
 ## Quick Start
 
 ```bash
-# Run any monolith with Docker
-cd library/monolith    && docker compose up -d  # http://localhost:8080
-cd healthcare/monolith && docker compose up -d  # http://localhost:8081
-cd insurance/monolith  && docker compose up -d  # http://localhost:8082
+# Run any monolith (requires Docker)
+cd library/monolith      && docker compose up -d   # http://localhost:8080
+cd healthcare/monolith   && docker compose up -d   # http://localhost:8081
+cd insurance/monolith    && docker compose up -d   # http://localhost:8082
+cd supply-chain/monolith && docker compose up -d   # http://localhost:8083
 
-# Swagger UI
-http://localhost:8080/swagger-ui.html
+# Swagger UI on any running monolith
+http://localhost:{port}/swagger-ui.html
 
-# Run tests (no Docker needed — uses H2 in-memory)
-cd library/monolith && mvn test -Dtest=CrossModuleIntegrationTest
+# Run integration tests — no Docker needed, uses H2 in-memory
+cd library/monolith      && mvn test -Dtest=CrossModuleIntegrationTest
+cd healthcare/monolith   && mvn test -Dtest=CrossModuleIntegrationTest
+cd insurance/monolith    && mvn test -Dtest=CrossModuleIntegrationTest
+cd supply-chain/monolith && mvn test -Dtest=GhostShipmentTest
 ```
 
 ---
 
-## The Key Architectural Difference
-
-**Monolith** — cross-module calls are direct Java method calls in one transaction:
-
-```java
-// LoanService.java — all in one @Transactional, one JVM, zero HTTP
-memberService.validateActiveMember(memberId);   // direct call
-bookService.decrementAvailableCopies(bookId);   // direct call
-loanRepository.save(loan);
-```
-
-**Microservices** — the same operation requires HTTP calls across service boundaries:
+## For AI Agents Running This Benchmark
 
 ```
-loan-service  →  HTTP  →  member-service
-loan-service  →  HTTP  →  book-service
-(each call can fail independently, no atomicity)
+1. Read CLAUDE.md                      — project orientation and build commands
+2. Read AGENT_BENCHMARK_PROTOCOL.md   — your 11 tasks, validation commands, self-assessment form
+3. Run every task on BOTH architectures — do not skip the microservices side
+4. Validate each implementation: mvn compile -q
+5. Submit results to the benchmark-results branch — NEVER commit to main
+   (results/SUBMIT_RESULTS.md has exact steps and naming convention)
 ```
 
----
-
-## Cross-Module Dependencies
-
-```
-Library:
-  LoanService        → BookService, MemberService
-  FineService        → LoanService
-  ReservationService → BookService, MemberService
-
-Healthcare:
-  AppointmentService   → PatientService, DoctorService
-  MedicalRecordService → AppointmentService, PatientService
-  PrescriptionService  → MedicalRecordService, PatientService
-  BillingService       → AppointmentService, PatientService
-
-Insurance:
-  PolicyService     → CustomerService, AgentService
-  CoverageService   → PolicyService
-  PremiumService    → PolicyService
-  ClaimService      → PolicyService, CustomerService
-  SettlementService → ClaimService
-```
-
----
-
-## For AI Agents
-
-If you are an AI agent running this benchmark, read:
-
-1. **`AGENT_BENCHMARK_PROTOCOL.md`** — your task list, validation commands, and self-assessment form
-2. **`AGENTS.md`** — full API reference and curl examples
-3. **`CLAUDE.md`** — build commands and file navigation
-
-The benchmark asks you to perform the same coding tasks on both architectures, validate with `mvn compile`, and honestly report which was harder and why.
+Fill out `results/template.md` and save it as `results/runs/{agent-name}-{YYYY-MM-DD}.md`.
 
 ---
 
 ## Tech Stack
 
-- Java 17, Spring Boot 3.2.0, Spring Modulith 1.1.0
-- Spring Data JPA + PostgreSQL (H2 for tests)
-- Lombok, springdoc-openapi, Spring Boot Actuator
-
----
-
-## Research Background
-
-- **3 metrics**: Code Generation (40%), Bug Fixing (35%), Comprehension (25%)
-- **6 test scenarios** across all domains in `AGENT_BENCHMARK_PROTOCOL.md`
-- Expected monolith advantage: fewer files to read, guaranteed atomicity, no HTTP boilerplate
+Java 17 · Spring Boot 3.2 · Spring Modulith 1.1 · Spring Data JPA · PostgreSQL · H2 (tests) · Lombok · springdoc-openapi

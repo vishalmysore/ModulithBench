@@ -1,0 +1,14 @@
+package com.benchmark.supplychain.warehouse;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public interface WarehouseTaskRepository extends JpaRepository<WarehouseTask, Long> {
+    Optional<WarehouseTask> findByOrderId(Long orderId);
+    List<WarehouseTask> findByWarehouseCode(String warehouseCode);
+    List<WarehouseTask> findByStatus(WarehouseTaskStatus status);
+    List<WarehouseTask> findByAssignedOperator(String operator);
+}

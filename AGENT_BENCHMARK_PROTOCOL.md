@@ -215,6 +215,82 @@ cd insurance/microservices/claim-service && mvn compile -q
 
 ---
 
+## Task Set D — Supply Chain Domain (Advanced)
+
+The hardest domain. 8 modules, physical-world constraints, and two scenarios that are uniquely powerful for demonstrating the monolith advantage.
+
+---
+
+### Task D1: The Ghost Shipment — Atomic Order Cancellation
+
+**Context**: A customer cancels an order. At the moment of cancellation:
+- The warehouse has a pick task in progress (status: PICKING)
+- The carrier has been notified and has a booking (status: BOOKED)
+- Inventory has 3 units reserved for this order
+
+The cancellation must atomically: release inventory + cancel warehouse task + cancel carrier booking.
+If any step fails, nothing should change.
+
+**Read first**: `supply-chain/monolith/src/main/java/com/benchmark/supplychain/order/OrderService.java` — the `cancelOrder()` method shows the monolith implementation. Read the Javadoc explaining the Ghost Shipment.
+
+**Monolith task**: Add a 5th step to `cancelOrder()`: also notify the `TrackingService` to mark any tracking record as CANCELLED. Verify the new step is inside the same `@Transactional`.
+
+**Microservices task**: In `supply-chain/microservices/order-service/`, implement the cancellation saga. The order-service must call inventory-service, warehouse-service, and carrier-service via HTTP. Design your compensation strategy: if carrier-service returns 503, what happens?
+
+**Validation**:
+```bash
+cd supply-chain/monolith && mvn compile -q
+cd supply-chain/microservices/order-service && mvn compile -q
+```
+
+**Self-check questions**:
+- In the monolith, how many lines did adding the 5th compensation step require?
+- In the microservices saga, how many new lines did adding a 4th service require (new event type, consumer, compensating handler)?
+- Can your microservices version guarantee that partial cancellation never happens? If not, how do you detect it?
+
+---
+
+### Task D2: The N+1 Report — Shipment Profitability
+
+**Context**: Generate a "Shipment Profitability Report" for a given order. The report needs:
+- Revenue (from Order module)
+- Shipping cost (from Carrier module)
+- Duties and taxes (from Customs module)
+- Fuel cost estimate (from Route module)
+
+**Read first**: `supply-chain/monolith/src/main/java/com/benchmark/supplychain/billing/BillingService.java` — see `generateProfitabilityReport()`. Notice it reads 4 modules in one `@Transactional(readOnly = true)`.
+
+**Monolith task**: Extend the report to also include the current tracking status (from TrackingService). Add `trackingStatus` field to `ShipmentProfitabilityReport` and populate it.
+
+**Microservices task**: In `supply-chain/microservices/billing-service/`, implement the same profitability report. You must call: order-service, carrier-service, customs-service, route-service via HTTP. Count how many lines of non-business-logic code you write (HTTP client setup, error handling, JSON mapping).
+
+**Validation**:
+```bash
+cd supply-chain/monolith && mvn compile -q
+cd supply-chain/microservices/billing-service && mvn compile -q
+```
+
+**Self-check questions**:
+- Monolith: how many lines is `generateProfitabilityReport()`?
+- Microservices: how many of those lines are HTTP infrastructure vs business logic?
+- What happens in the microservices version if customs-service is down? Does the report fail entirely or return partial data?
+
+---
+
+### Task D3: Add Dispatch Notification
+
+**Task**: When a warehouse task transitions to DISPATCHED, automatically send a notification (create a `Notification` record with `orderId`, `message`, and `timestamp`).
+
+**Monolith task**: Add a `Notification` entity and `NotificationService` to `supply-chain/monolith/`. Modify `WarehouseService.dispatch()` to call `notificationService.createNotification()` in the same transaction.
+
+**Microservices task**: In `supply-chain/microservices/warehouse-service/`, publish an event or make an HTTP call to a hypothetical notification-service after dispatch. Handle the case where the notification service is unavailable.
+
+**Self-check questions**:
+- In the monolith, if the notification fails to save, does the dispatch still complete?
+- In the microservices version, what is your consistency model between dispatch and notification?
+
+---
+
 ## How to Score Your Own Performance
 
 After completing all tasks, fill out this self-assessment:
@@ -260,6 +336,22 @@ Task C1 (Auto-Settlement):
 Task C2 (Policy Ownership):
   Both paths explained correctly: YES / NO / PARTIAL
 
+Task D1 (Ghost Shipment):
+  Monolith atomic:          YES / NO
+  Microservices atomic:     YES / NO / BEST_EFFORT
+  Compensating logic lines added (microservices): ___
+
+Task D2 (N+1 Profitability Report):
+  Monolith completed:       YES / NO / PARTIAL
+  Microservices completed:  YES / NO / PARTIAL
+  Monolith HTTP calls made: 0
+  Microservices HTTP calls: ___
+  Microservices error handlers added: ___
+
+Task D3 (Add Notification on Dispatch):
+  Monolith completed:       YES / NO / PARTIAL
+  Microservices completed:  YES / NO / PARTIAL
+
 --- DIFFICULTY RATINGS (1=easy, 5=very hard) ---
 
 Task A1:  Monolith: _/5   Microservices: _/5
@@ -268,6 +360,9 @@ Task A3:  Monolith: _/5   Microservices: _/5
 Task B1:  Monolith: _/5   Microservices: _/5
 Task B2:  Monolith: _/5   Microservices: _/5
 Task C1:  Monolith: _/5   Microservices: _/5
+Task D1:  Monolith: _/5   Microservices: _/5
+Task D2:  Monolith: _/5   Microservices: _/5
+Task D3:  Monolith: _/5   Microservices: _/5
 
 Average difficulty — Monolith:      _/5
 Average difficulty — Microservices: _/5
@@ -280,8 +375,8 @@ Total files read for all microservices tasks: ___
 --- ATOMICITY SCORE ---
 (Tasks where you could guarantee all-or-nothing behavior)
 
-Monolith atomic tasks:      _/4
-Microservices atomic tasks: _/4
+Monolith atomic tasks:      _/5
+Microservices atomic tasks: _/5
 
 --- FREE TEXT ---
 
@@ -296,6 +391,36 @@ _______________________________________________
 
 === END REPORT ===
 ```
+
+---
+
+## How to Submit Your Results
+
+After completing the benchmark, submit results to the `benchmark-results` branch.
+**Never commit to `main`.**
+
+### Quick submission
+
+```bash
+# 1. Copy the results template
+cp results/template.md results/runs/{your-agent-name}-$(date +%Y-%m-%d).md
+
+# 2. Fill out the template (add your scores and observations)
+
+# 3. Switch to results branch and submit
+git fetch origin
+git checkout benchmark-results 2>/dev/null || git checkout -b benchmark-results
+git add results/runs/{your-agent-name}-$(date +%Y-%m-%d).md
+git commit -m "Add benchmark results: {your-agent-name} $(date +%Y-%m-%d)"
+git push origin benchmark-results
+
+# 4. Return to clean main baseline
+git checkout main
+git checkout -- .
+git clean -fd
+```
+
+See `results/SUBMIT_RESULTS.md` for full instructions and naming conventions.
 
 ---
 

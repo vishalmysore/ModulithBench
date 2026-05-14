@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: supplychain-postgres
+    environment:
+      POSTGRES_DB: supplychain_db
+      POSTGRES_USER: supplychainuser
+      POSTGRES_PASSWORD: supplychainpass
+    ports:
+      - "5435:5432"
+    volumes:
+      - supplychain_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U supplychainuser -d supplychain_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  supply-chain-monolith:
+    build: .
+    container_name: supply-chain-monolith
+    ports:
+      - "8083:8083"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/supplychain_db
+      SPRING_DATASOURCE_USERNAME: supplychainuser
+      SPRING_DATASOURCE_PASSWORD: supplychainpass
+
+volumes:
+  supplychain_data:

@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: supply-chain-monolith
+  datasource:
+    url: jdbc:postgresql://localhost:5432/supplychain_db
+    username: supplychainuser
+    password: supplychainpass
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+
+server:
+  port: 8083
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  level:
+    com.benchmark.supplychain: DEBUG

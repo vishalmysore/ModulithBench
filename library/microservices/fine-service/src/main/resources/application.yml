@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: finedb
+  datasource:
+    url: jdbc:postgresql://finedb:5432/finedb
+    username: fineuser
+    password: finepass
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: guest
+    password: guest
+
+server:
+  port: 8084
+  servlet:
+    context-path: /api/v1

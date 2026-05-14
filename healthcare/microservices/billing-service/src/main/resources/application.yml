@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: billingdb
+  datasource:
+    url: jdbc:postgresql://billingdb:5432/billingdb
+    username: billinguser
+    password: billingpass
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: guest
+    password: guest
+
+server:
+  port: 8096
+  servlet:
+    context-path: /api/v1

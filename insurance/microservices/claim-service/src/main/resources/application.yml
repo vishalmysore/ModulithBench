@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: claimdb
+  datasource:
+    url: jdbc:postgresql://claimdb:5432/claimdb
+    username: claimuser
+    password: claimpass
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: guest
+    password: guest
+
+server:
+  port: 8103
+  servlet:
+    context-path: /api/v1

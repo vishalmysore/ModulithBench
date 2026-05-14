@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: library-postgres
+    environment:
+      POSTGRES_DB: library_db
+      POSTGRES_USER: libraryuser
+      POSTGRES_PASSWORD: librarypass
+    ports:
+      - "5432:5432"
+    volumes:
+      - library_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U libraryuser -d library_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  library-monolith:
+    build: .
+    container_name: library-monolith
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/library_db
+      SPRING_DATASOURCE_USERNAME: libraryuser
+      SPRING_DATASOURCE_PASSWORD: librarypass
+
+volumes:
+  library_data:

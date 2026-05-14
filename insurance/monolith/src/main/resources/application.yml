@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: insurance-monolith
+  datasource:
+    url: jdbc:postgresql://localhost:5432/insurance_db
+    username: insuranceuser
+    password: insurancepass
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+
+server:
+  port: 8082
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  level:
+    com.benchmark.insurance: DEBUG

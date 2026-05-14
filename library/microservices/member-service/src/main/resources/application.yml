@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: memberdb
+  datasource:
+    url: jdbc:postgresql://memberdb:5432/memberdb
+    username: memberuser
+    password: memberpass
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: guest
+    password: guest
+
+server:
+  port: 8082
+  servlet:
+    context-path: /api/v1

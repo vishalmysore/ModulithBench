@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: recorddb
+  datasource:
+    url: jdbc:postgresql://recorddb:5432/recorddb
+    username: recorduser
+    password: recordpass
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: guest
+    password: guest
+
+server:
+  port: 8094
+  servlet:
+    context-path: /api/v1

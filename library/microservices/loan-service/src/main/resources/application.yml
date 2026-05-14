@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: loandb
+  datasource:
+    url: jdbc:postgresql://loandb:5432/loandb
+    username: loanuser
+    password: loanpass
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: guest
+    password: guest
+
+server:
+  port: 8083
+  servlet:
+    context-path: /api/v1

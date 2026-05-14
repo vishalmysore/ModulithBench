@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: reservationdb
+  datasource:
+    url: jdbc:postgresql://reservationdb:5432/reservationdb
+    username: reservationuser
+    password: reservationpass
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: guest
+    password: guest
+
+server:
+  port: 8085
+  servlet:
+    context-path: /api/v1

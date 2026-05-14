@@ -1,0 +1,97 @@
+version: '3.8'
+
+services:
+  # Message Queue
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: library-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - library-network
+
+  # Databases
+  book-db:
+    image: postgres:15
+    container_name: book-db
+    environment:
+      POSTGRES_DB: bookdb
+      POSTGRES_USER: bookuser
+      POSTGRES_PASSWORD: bookpass
+    ports:
+      - "5432:5432"
+    networks:
+      - library-network
+
+  member-db:
+    image: postgres:15
+    container_name: member-db
+    environment:
+      POSTGRES_DB: memberdb
+      POSTGRES_USER: memberuser
+      POSTGRES_PASSWORD: memberpass
+    ports:
+      - "5433:5432"
+    networks:
+      - library-network
+
+  loan-db:
+    image: postgres:15
+    container_name: loan-db
+    environment:
+      POSTGRES_DB: loandb
+      POSTGRES_USER: loanuser
+      POSTGRES_PASSWORD: loanpass
+    ports:
+      - "5434:5432"
+    networks:
+      - library-network
+
+  fine-db:
+    image: postgres:15
+    container_name: fine-db
+    environment:
+      POSTGRES_DB: finedb
+      POSTGRES_USER: fineuser
+      POSTGRES_PASSWORD: finepass
+    ports:
+      - "5435:5432"
+    networks:
+      - library-network
+
+  reservation-db:
+    image: postgres:15
+    container_name: reservation-db
+    environment:
+      POSTGRES_DB: reservationdb
+      POSTGRES_USER: reservationuser
+      POSTGRES_PASSWORD: reservationpass
+    ports:
+      - "5436:5432"
+    networks:
+      - library-network
+
+  # API Gateway
+  api-gateway:
+    image: nginx:latest
+    container_name: library-api-gateway
+    ports:
+      - "8000:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - book-service
+      - member-service
+      - loan-service
+      - fine-service
+      - reservation-service
+    networks:
+      - library-network
+
+networks:
+  library-network:
+    driver: bridge

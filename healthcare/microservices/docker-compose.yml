@@ -1,0 +1,112 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: healthcare-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - healthcare-network
+
+  patient-db:
+    image: postgres:15
+    container_name: patient-db
+    environment:
+      POSTGRES_DB: patientdb
+      POSTGRES_USER: patientuser
+      POSTGRES_PASSWORD: patientpass
+    ports:
+      - "5437:5432"
+    networks:
+      - healthcare-network
+
+  doctor-db:
+    image: postgres:15
+    container_name: doctor-db
+    environment:
+      POSTGRES_DB: doctordb
+      POSTGRES_USER: doctoruser
+      POSTGRES_PASSWORD: doctorpass
+    ports:
+      - "5438:5432"
+    networks:
+      - healthcare-network
+
+  appointment-db:
+    image: postgres:15
+    container_name: appointment-db
+    environment:
+      POSTGRES_DB: appointmentdb
+      POSTGRES_USER: appointmentuser
+      POSTGRES_PASSWORD: appointmentpass
+    ports:
+      - "5439:5432"
+    networks:
+      - healthcare-network
+
+  medicalrecord-db:
+    image: postgres:15
+    container_name: medicalrecord-db
+    environment:
+      POSTGRES_DB: medicalrecorddb
+      POSTGRES_USER: medicalrecorduser
+      POSTGRES_PASSWORD: medicalrecordpass
+    ports:
+      - "5440:5432"
+    networks:
+      - healthcare-network
+
+  prescription-db:
+    image: postgres:15
+    container_name: prescription-db
+    environment:
+      POSTGRES_DB: prescriptiondb
+      POSTGRES_USER: prescriptionuser
+      POSTGRES_PASSWORD: prescriptionpass
+    ports:
+      - "5441:5432"
+    networks:
+      - healthcare-network
+
+  billing-db:
+    image: postgres:15
+    container_name: billing-db
+    environment:
+      POSTGRES_DB: billingdb
+      POSTGRES_USER: billinguser
+      POSTGRES_PASSWORD: billingpass
+    ports:
+      - "5442:5432"
+    networks:
+      - healthcare-network
+
+  department-db:
+    image: postgres:15
+    container_name: department-db
+    environment:
+      POSTGRES_DB: departmentdb
+      POSTGRES_USER: departmentuser
+      POSTGRES_PASSWORD: departmentpass
+    ports:
+      - "5443:5432"
+    networks:
+      - healthcare-network
+
+  api-gateway:
+    image: nginx:latest
+    container_name: healthcare-api-gateway
+    ports:
+      - "8001:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - healthcare-network
+
+networks:
+  healthcare-network:
+    driver: bridge

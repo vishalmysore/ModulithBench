@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: doctordb
+  datasource:
+    url: jdbc:postgresql://doctordb:5432/doctordb
+    username: doctoruser
+    password: doctorpass
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: guest
+    password: guest
+
+server:
+  port: 8092
+  servlet:
+    context-path: /api/v1

@@ -1,0 +1,112 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: insurance-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - insurance-network
+
+  customer-db:
+    image: postgres:15
+    container_name: customer-db
+    environment:
+      POSTGRES_DB: customerdb
+      POSTGRES_USER: customeruser
+      POSTGRES_PASSWORD: customerpass
+    ports:
+      - "5444:5432"
+    networks:
+      - insurance-network
+
+  policy-db:
+    image: postgres:15
+    container_name: policy-db
+    environment:
+      POSTGRES_DB: policydb
+      POSTGRES_USER: policyuser
+      POSTGRES_PASSWORD: policypass
+    ports:
+      - "5445:5432"
+    networks:
+      - insurance-network
+
+  claim-db:
+    image: postgres:15
+    container_name: claim-db
+    environment:
+      POSTGRES_DB: claimdb
+      POSTGRES_USER: claimuser
+      POSTGRES_PASSWORD: claimpass
+    ports:
+      - "5446:5432"
+    networks:
+      - insurance-network
+
+  agent-db:
+    image: postgres:15
+    container_name: agent-db
+    environment:
+      POSTGRES_DB: agentdb
+      POSTGRES_USER: agentuser
+      POSTGRES_PASSWORD: agentpass
+    ports:
+      - "5447:5432"
+    networks:
+      - insurance-network
+
+  premium-db:
+    image: postgres:15
+    container_name: premium-db
+    environment:
+      POSTGRES_DB: premiumdb
+      POSTGRES_USER: premiumuser
+      POSTGRES_PASSWORD: premiumpass
+    ports:
+      - "5448:5432"
+    networks:
+      - insurance-network
+
+  settlement-db:
+    image: postgres:15
+    container_name: settlement-db
+    environment:
+      POSTGRES_DB: settlementdb
+      POSTGRES_USER: settlementuser
+      POSTGRES_PASSWORD: settlementpass
+    ports:
+      - "5449:5432"
+    networks:
+      - insurance-network
+
+  coverage-db:
+    image: postgres:15
+    container_name: coverage-db
+    environment:
+      POSTGRES_DB: coveragedb
+      POSTGRES_USER: coverageuser
+      POSTGRES_PASSWORD: coveragepass
+    ports:
+      - "5450:5432"
+    networks:
+      - insurance-network
+
+  api-gateway:
+    image: nginx:latest
+    container_name: insurance-api-gateway
+    ports:
+      - "8002:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - insurance-network
+
+networks:
+  insurance-network:
+    driver: bridge

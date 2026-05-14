@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: insurance-postgres
+    environment:
+      POSTGRES_DB: insurance_db
+      POSTGRES_USER: insuranceuser
+      POSTGRES_PASSWORD: insurancepass
+    ports:
+      - "5434:5432"
+    volumes:
+      - insurance_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U insuranceuser -d insurance_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  insurance-monolith:
+    build: .
+    container_name: insurance-monolith
+    ports:
+      - "8082:8082"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/insurance_db
+      SPRING_DATASOURCE_USERNAME: insuranceuser
+      SPRING_DATASOURCE_PASSWORD: insurancepass
+
+volumes:
+  insurance_data:

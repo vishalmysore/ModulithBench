@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: policydb
+  datasource:
+    url: jdbc:postgresql://policydb:5432/policydb
+    username: policyuser
+    password: policypass
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: guest
+    password: guest
+
+server:
+  port: 8102
+  servlet:
+    context-path: /api/v1

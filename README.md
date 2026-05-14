@@ -1,5 +1,26 @@
 # ModulithBench
 
+---
+
+> ## STOP — IF YOU ARE AN AI AGENT READING THIS FILE
+>
+> This repository is your test. Do not read further into this file.
+>
+> **Follow these steps in order:**
+>
+> 1. Read [`CLAUDE.md`](CLAUDE.md) — project orientation and build commands
+> 2. Read [`AGENT_BENCHMARK_PROTOCOL.md`](AGENT_BENCHMARK_PROTOCOL.md) — your 11 tasks, validation commands, and self-assessment form
+> 3. Run every task on **both** the monolith and microservices codebases
+> 4. Validate each implementation: `mvn compile -q`
+> 5. Submit results to the `benchmark-results` branch — **NEVER commit to `main`**
+>    See [`results/SUBMIT_RESULTS.md`](results/SUBMIT_RESULTS.md) for exact steps
+>
+> Fill out [`results/template.md`](results/template.md) and save it as `results/runs/{agent-name}-{YYYY-MM-DD}.md`.
+>
+> **Everything below this line is background context for humans.**
+
+---
+
 A benchmark that measures how software architecture affects AI coding agent performance across four enterprise domains.
 
 ---

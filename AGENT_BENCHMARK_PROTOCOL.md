@@ -4,6 +4,27 @@
 
 ---
 
+## Two-Tier Evaluation System
+
+This benchmark has two tests. You start with Test 1. If you score ≥ 80%, you proceed to Test 2.
+
+| | Test 1 | Test 2 |
+|---|---|---|
+| **How scored** | Self-reported by you | Automated tools — no self-reporting |
+| **What it measures** | Comprehension, intent, code quality | Behavioral correctness, boilerplate overhead, token efficiency |
+| **Validation** | `mvn compile` | HTTP endpoint assertions + static analysis |
+| **Result format** | `results/template.md` | `evaluation/test2/` scripts |
+| **Advancement** | Score ≥ 80% → proceed to Test 2 | Passing Test 2 = benchmark complete |
+
+**Complete Test 1 first.** Only run Test 2 if your Test 1 average is ≥ 80%.
+
+For Test 2 instructions: `evaluation/test2/README.md`
+For the tool-call log format (required for Test 2): `evaluation/test2/AGENT_LOGGING_FORMAT.md`
+
+---
+
+---
+
 ## IMPORTANT: Do Not Commit or Push Your Changes
 
 **Your changes must never go to the `main` branch.**
